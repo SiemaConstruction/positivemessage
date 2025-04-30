@@ -10,7 +10,13 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #fffafc;
       color: #4e6e58;
-      background-image: url('https://www.transparenttextures.com/patterns/symphony.png');
+      background-image:
+        url('https://i.imgur.com/yO0bFOu.png'),
+        url('https://i.imgur.com/yO0bFOu.png'),
+        url('https://i.imgur.com/yO0bFOu.png');
+      background-position: top left, center center, bottom right;
+      background-repeat: no-repeat;
+      background-size: 100px;
     }
 
     header {
@@ -177,30 +183,3 @@
       container.innerHTML = '';
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        const div = document.createElement('div');
-        div.className = 'message';
-        div.style.backgroundColor = stickyColors[Math.floor(Math.random() * stickyColors.length)];
-
-        const messageText = document.createElement('div');
-        messageText.textContent = data.content;
-
-        const delBtn = document.createElement('button');
-        delBtn.textContent = "🗑️";
-        delBtn.onclick = async () => {
-          if (confirm("Delete this message?")) {
-            await deleteDoc(doc(db, "messages", docSnap.id));
-          }
-        };
-
-        div.appendChild(messageText);
-        div.appendChild(delBtn);
-        container.appendChild(div);
-      });
-    });
-  }
-
-  startApp();
-</script>
-
-</body>
-</html>
