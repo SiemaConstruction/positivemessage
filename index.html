@@ -8,8 +8,8 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #fffafc;
-      color: #4e6e58;
+      background-color: #f1fdf4;
+      color: #2e7d32;
       background-image:
         url('https://i.imgur.com/yO0bFOu.png'),
         url('https://i.imgur.com/yO0bFOu.png'),
@@ -20,12 +20,12 @@
     }
 
     header {
-      background-color: #f48fb1;
+      background-color: #66bb6a;
       color: white;
       padding: 20px;
       text-align: center;
       font-size: 2em;
-      border-bottom: 4px dotted #f06292;
+      border-bottom: 4px dotted #43a047;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
@@ -47,16 +47,16 @@
       width: 100%;
       padding: 14px;
       font-size: 1em;
-      border: 2px dashed #f8bbd0;
+      border: 2px dashed #a5d6a7;
       border-radius: 12px;
       resize: vertical;
       min-height: 100px;
-      background-color: #fff0f6;
+      background-color: #f1f8e9;
     }
 
     button {
       margin-top: 12px;
-      background-color: #f06292;
+      background-color: #81c784;
       color: white;
       padding: 10px 16px;
       border: none;
@@ -67,7 +67,7 @@
     }
 
     button:hover {
-      background-color: #ec407a;
+      background-color: #66bb6a;
     }
 
     .message-board {
@@ -86,7 +86,7 @@
       font-size: 1em;
       white-space: pre-wrap;
       position: relative;
-      background-color: #fce4ec;
+      background-color: #e8f5e9;
       box-shadow: 4px 4px 10px rgba(0,0,0,0.1);
       transition: transform 0.2s ease;
     }
@@ -99,16 +99,19 @@
       position: absolute;
       bottom: 10px;
       right: 10px;
-      background-color: #e57373;
+      background-color: #66bb6a;
       padding: 4px 8px;
       border-radius: 8px;
       font-size: 0.9em;
+      color: white;
+      border: none;
+      cursor: pointer;
     }
 
     footer {
       text-align: center;
       margin: 40px auto;
-      color: #999;
+      color: #666;
       font-size: 0.9em;
       padding-bottom: 20px;
     }
@@ -116,7 +119,7 @@
 </head>
 <body>
 
-  <header>💖 Positive Message Board 💌</header>
+  <header>🌿 Positive Message Board 💌</header>
 
   <main id="mainApp">
     <h2>Leave a kind and anonymous message 💬</h2>
@@ -127,7 +130,7 @@
     <div class="message-board" id="messagesContainer"></div>
   </main>
 
-  <footer>🌸 Only share positive, anonymous thoughts 💚</footer>
+  <footer>🌱 Only share positive, anonymous thoughts 💚</footer>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -163,7 +166,7 @@
     const container = document.getElementById('messagesContainer');
 
     const stickyColors = [
-      "#fff9c4", "#ffccbc", "#b2ebf2", "#c5e1a5", "#f8bbd0", "#d1c4e9", "#ffe0b2"
+      "#dcedc8", "#c5e1a5", "#a5d6a7", "#b2dfdb", "#f0f4c3", "#e6ee9c", "#d0f8ce"
     ];
 
     form.addEventListener('submit', async function (e) {
@@ -183,3 +186,30 @@
       container.innerHTML = '';
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.style.backgroundColor = stickyColors[Math.floor(Math.random() * stickyColors.length)];
+
+        const messageText = document.createElement('div');
+        messageText.textContent = data.content;
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = "🗑️";
+        delBtn.onclick = async () => {
+          if (confirm("Delete this message?")) {
+            await deleteDoc(doc(db, "messages", docSnap.id));
+          }
+        };
+
+        div.appendChild(messageText);
+        div.appendChild(delBtn);
+        container.appendChild(div);
+      });
+    });
+  }
+
+  startApp();
+</script>
+
+</body>
+</html>
