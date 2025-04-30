@@ -1,153 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title> Positive Message Board</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #e8f5e9;
-      color: #2e7d32;
-    }
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp,
+    deleteDoc,
+    doc
+  } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-    header {
-      background-color: #43a047;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 2em;
-    }
+  function startApp() {
+    const firebaseConfig = {
+      apiKey: "AIzaSyBM0a5KmykgUliAERC-RhGdkjm6M3gGlO4",
+      authDomain: "siema-positive-message-board.firebaseapp.com",
+      projectId: "siema-positive-message-board",
+      storageBucket: "siema-positive-message-board.firebasestorage.app",
+      messagingSenderId: "933509777926",
+      appId: "1:933509777926:web:b5cc19ac45b31256169187",
+      measurementId: "G-GLGN2J7R91"
+    };
 
-    main {
-      max-width: 800px;
-      margin: 30px auto;
-      background-color: #ffffff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    textarea {
-      width: 100%;
-      padding: 12px;
-      font-size: 1em;
-      border: 2px solid #a5d6a7;
-      border-radius: 8px;
-      resize: vertical;
-      min-height: 100px;
-    }
+    const form = document.getElementById('messageForm');
+    const input = document.getElementById('messageInput');
+    const container = document.getElementById('messagesContainer');
 
-    button {
-      margin-top: 12px;
-      background-color: #66bb6a;
-      color: white;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1em;
-    }
+    const stickyColors = [
+      "#fff59d", "#ffccbc", "#b2dfdb", "#c5e1a5", "#f8bbd0", "#d1c4e9", "#e1bee7"
+    ];
 
-    .message-board {
-      margin-top: 30px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .message {
-      width: 180px;
-      min-height: 100px;
-      padding: 12px 15px;
-      border-radius: 8px;
-      font-size: 1em;
-      white-space: pre-wrap;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-    }
-
-    footer {
-      text-align: center;
-      margin: 40px auto;
-      color: #666;
-      font-size: 0.9em;
-    }
-  </style>
-</head>
-<body>
-
-  <header>Siema Construction Positive Message Board</header>
-
-  <main id="mainApp">
-    <h2>Leave a kind and anonymous message 💬</h2>
-    <form id="messageForm">
-      <textarea id="messageInput" placeholder="Share something kind..."></textarea>
-      <button type="submit">Post</button>
-    </form>
-    <div class="message-board" id="messagesContainer"></div>
-  </main>
-
-  <footer>Only share positive, anonymous thoughts 💚</footer>
-
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
-    function startApp() {
-      // ✅ Replace this with your Firebase config
-      const firebaseConfig = {
-         apiKey: "AIzaSyBM0a5KmykgUliAERC-RhGdkjm6M3gGlO4",
-    authDomain: "siema-positive-message-board.firebaseapp.com",
-    projectId: "siema-positive-message-board",
-    storageBucket: "siema-positive-message-board.firebasestorage.app",
-    messagingSenderId: "933509777926",
-    appId: "1:933509777926:web:b5cc19ac45b31256169187",
-    measurementId: "G-GLGN2J7R91"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-
-      const form = document.getElementById('messageForm');
-      const input = document.getElementById('messageInput');
-      const container = document.getElementById('messagesContainer');
-
-      const stickyColors = [
-        "#fff59d", "#ffccbc", "#b2dfdb", "#c5e1a5", "#f8bbd0", "#d1c4e9", "#e1bee7"
-      ];
-
-      form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const text = input.value.trim();
-        if (text !== "") {
-          await addDoc(collection(db, "messages"), {
-            content: text,
-            timestamp: serverTimestamp()
-          });
-          input.value = '';
-        }
-      });
-
-      const q = query(collection(db, "messages"), orderBy("timestamp", "desc"));
-      onSnapshot(q, (snapshot) => {
-        container.innerHTML = '';
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const div = document.createElement('div');
-          div.className = 'message';
-          div.style.backgroundColor = stickyColors[Math.floor(Math.random() * stickyColors.length)];
-          div.textContent = data.content;
-          container.appendChild(div);
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (text !== "") {
+        await addDoc(collection(db, "messages"), {
+          content: text,
+          timestamp: serverTimestamp()
         });
+        input.value = '';
+      }
+    });
+
+    const q = query(collection(db, "messages"), orderBy("timestamp", "desc"));
+    onSnapshot(q, (snapshot) => {
+      container.innerHTML = '';
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.style.backgroundColor = stickyColors[Math.floor(Math.random() * stickyColors.length)];
+        div.textContent = data.content;
+
+        // Create delete button
+        const delBtn = document.createElement('button');
+        delBtn.textContent = " 🗑️";
+        delBtn.style.marginLeft = "10px";
+        delBtn.style.background = "transparent";
+        delBtn.style.border = "none";
+        delBtn.style.cursor = "pointer";
+        delBtn.style.color = "#2e7d32";
+        delBtn.onclick = async () => {
+          if (confirm("Delete this message?")) {
+            await deleteDoc(doc(db, "messages", docSnap.id));
+          }
+        };
+
+        // Append delete button to message
+        div.appendChild(delBtn);
+        container.appendChild(div);
       });
-    }
+    });
+  }
 
-    startApp(); // Initialize the Firebase app immediately
-  </script>
-</body>
-</html>
-
-
-
+  startApp();
+</script>
