@@ -98,16 +98,6 @@
       font-weight: bold;
       padding-bottom: 20px;
     }
-    #adminLogin {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    #adminLogin input {
-      padding: 8px;
-      margin: 5px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
   </style>
 </head>
 <body>
@@ -115,15 +105,6 @@
 <header>🌿 Positive Message Board 💌</header>
 <main id="mainApp">
   <h2>Leave a kind and anonymous message 💬</h2>
-
-  <!-- Admin Login Section -->
-  <div id="adminLogin">
-    <input type="email" id="adminEmail" placeholder="Admin Email" />
-    <input type="password" id="adminPassword" placeholder="Password" />
-    <button id="loginBtn">Login</button>
-    <button id="logoutBtn" style="display: none;">Logout</button>
-  </div>
-
   <form id="messageForm">
     <textarea id="messageInput" placeholder="Share something kind..."></textarea>
     <button type="submit">Post</button>
@@ -135,7 +116,6 @@
 <!-- Firebase SDKs -->
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <script defer>
   window.addEventListener('DOMContentLoaded', () => {
@@ -143,7 +123,7 @@
       apiKey: "AIzaSyBM0a5KmykgUliAERC-RhGdkjm6M3gGlO4",
       authDomain: "siema-positive-message-board.firebaseapp.com",
       projectId: "siema-positive-message-board",
-      storageBucket: "siema-positive-message-board.firebasestorage.app",
+      storageBucket: "siema-positive-message-board.appspot.com",
       messagingSenderId: "933509777926",
       appId: "1:933509777926:web:b5cc19ac45b31256169187",
       measurementId: "G-GLGN2J7R91"
@@ -151,37 +131,11 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const auth = firebase.auth();
 
     const form = document.getElementById('messageForm');
     const input = document.getElementById('messageInput');
     const container = document.getElementById('messagesContainer');
     const colors = ["#dcedc8", "#f1f8e9", "#e0f2f1", "#f9fbe7", "#f0f4c3", "#b9f6ca", "#c8e6c9"];
-
-    let currentUser = null;
-
-    // Admin login
-    document.getElementById("loginBtn").onclick = async () => {
-      const email = document.getElementById("adminEmail").value;
-      const password = document.getElementById("adminPassword").value;
-      try {
-        const result = await auth.signInWithEmailAndPassword(email, password);
-        currentUser = result.user;
-        alert("Logged in as admin");
-        document.getElementById("logoutBtn").style.display = "inline-block";
-        document.getElementById("loginBtn").style.display = "none";
-      } catch (error) {
-        alert("Login failed: " + error.message);
-      }
-    };
-
-    document.getElementById("logoutBtn").onclick = async () => {
-      await auth.signOut();
-      currentUser = null;
-      alert("Logged out");
-      document.getElementById("logoutBtn").style.display = "none";
-      document.getElementById("loginBtn").style.display = "inline-block";
-    };
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -206,17 +160,13 @@
         const div = document.createElement('div');
         div.className = 'message';
         div.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-
+        
         const msg = document.createElement('div');
         msg.textContent = data.content;
-
+        
         const btn = document.createElement('button');
         btn.textContent = "🗑️";
         btn.onclick = async () => {
-          if (!currentUser) {
-            alert("Only admins can delete messages.");
-            return;
-          }
           if (confirm("Delete this message?")) {
             try {
               await db.collection("messages").doc(docSnap.id).delete();
