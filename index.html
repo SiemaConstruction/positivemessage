@@ -127,25 +127,11 @@
       storageBucket: "positivemessageboard-686df.appspot.com",
       messagingSenderId: "353735070843",
       appId: "1:353735070843:web:756daeb5bf73785349fede"
-      firebase.auth().signInAnonymously()
-
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    firebase.auth().signInAnonymously().then((result) => {
-  const uid = result.user.uid;
-  console.log("Your UID:", uid);
-
-  // Show UID in the footer for now
-  const uidDiv = document.createElement("div");
-  uidDiv.style.fontSize = "0.8em";
-  uidDiv.style.marginTop = "12px";
-  uidDiv.textContent = "🔐 Your UID: " + uid;
-  document.querySelector("footer").appendChild(uidDiv);
-});
-
-
+    const auth = firebase.auth();
 
     const form = document.getElementById('messageForm');
     const input = document.getElementById('messageInput');
@@ -153,52 +139,54 @@
     const colors = ["#dcedc8", "#f1f8e9", "#e0f2f1", "#f9fbe7", "#f0f4c3", "#b9f6ca", "#c8e6c9"];
     let isAdmin = false;
 
-    // Automatically sign in anonymously
-    await auth.signInAnonymously();
+    try {
+      const result = await auth.signInAnonymously();
+      const uid = result.user.uid;
+      console.log("Your UID:", uid);
 
-    auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        const uid = user.uid;
-        console.log("Your UID:", uid);
+      const uidDiv = document.createElement("div");
+      uidDiv.style.fontSize = "0.8em";
+      uidDiv.style.marginTop = "12px";
+      uidDiv.textContent = "🔐 Your UID: " + uid;
+      document.querySelector("footer").appendChild(uidDiv);
 
-        // Check if UID is listed as admin
-        const doc = await db.collection("admins").doc(uid).get();
-        isAdmin = doc.exists;
+      const adminDoc = await db.collection("admins").doc(uid).get();
+      isAdmin = adminDoc.exists;
 
-        db.collection("messages").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-          container.innerHTML = '';
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const div = document.createElement('div');
-            div.className = 'message';
-            div.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      db.collection("messages").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+        container.innerHTML = '';
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const div = document.createElement('div');
+          div.className = 'message';
+          div.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
-            const msg = document.createElement('div');
-            msg.textContent = data.content;
+          const msg = document.createElement('div');
+          msg.textContent = data.content;
+          div.appendChild(msg);
 
-            div.appendChild(msg);
-
-            if (isAdmin) {
-              const btn = document.createElement('button');
-              btn.textContent = "🗑️";
-              btn.onclick = async () => {
-                if (confirm("Delete this message?")) {
-                  try {
-                    await db.collection("messages").doc(docSnap.id).delete();
-                  } catch (err) {
-                    alert("Delete failed.");
-                    console.error(err);
-                  }
+          if (isAdmin) {
+            const btn = document.createElement('button');
+            btn.textContent = "🗑️";
+            btn.onclick = async () => {
+              if (confirm("Delete this message?")) {
+                try {
+                  await db.collection("messages").doc(docSnap.id).delete();
+                } catch (err) {
+                  alert("Delete failed.");
+                  console.error(err);
                 }
-              };
-              div.appendChild(btn);
-            }
+              }
+            };
+            div.appendChild(btn);
+          }
 
-            container.appendChild(div);
-          });
+          container.appendChild(div);
         });
-      }
-    });
+      });
+    } catch (err) {
+      console.error("Auth failed:", err);
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
